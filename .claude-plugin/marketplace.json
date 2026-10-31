@@ -1,0 +1,16 @@
+{
+  "$schema": "https://anthropic.com/claude-code/marketplace.schema.json",
+  "name": "tradingagents",
+  "description": "TradingAgents multi-agent stock analysis for Claude Code, on your Claude plan.",
+  "owner": {
+    "name": "Roisters"
+  },
+  "plugins": [
+    {
+      "name": "tradingagents",
+      "description": "Run the TradingAgents multi-agent stock analysis on your Claude plan.",
+      "source": "./",
+      "category": "productivity"
+    }
+  ]
+}

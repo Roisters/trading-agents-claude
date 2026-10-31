@@ -1,0 +1,37 @@
+#!/usr/bin/env bash
+# Runs the bundled TradingAgents engine on the Claude plan. Arguments go to the tradingagents CLI.
+set -euo pipefail
+
+if ! command -v uvx >/dev/null 2>&1; then
+  echo "uvx not found. Install uv: https://docs.astral.sh/uv/getting-started/installation/" >&2
+  exit 127
+fi
+
+here="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
+
+export TRADINGAGENTS_LLM_PROVIDER=claude_code
+export TRADINGAGENTS_QUICK_THINK_LLM="${TRADINGAGENTS_QUICK_THINK_LLM:-claude-sonnet-5}"
+export TRADINGAGENTS_DEEP_THINK_LLM="${TRADINGAGENTS_DEEP_THINK_LLM:-claude-opus-5-5}"
+export TRADINGAGENTS_OUTPUT_LANGUAGE="${TRADINGAGENTS_OUTPUT_LANGUAGE:-English}"
+export TRADINGAGENTS_MAX_DEBATE_ROUNDS="${TRADINGAGENTS_MAX_DEBATE_ROUNDS:-1}"
+export TRADINGAGENTS_MAX_RISK_ROUNDS="${TRADINGAGENTS_MAX_RISK_ROUNDS:-1}"
+# The upstream update notice would suggest a TradingAgents release without the claude_code provider.
+export TRADINGAGENTS_NO_UPDATE_CHECK=1
+
+reports="${TRADINGAGENTS_RESULTS_DIR:-$HOME/.tradingagents/logs}/reports"
+mkdir -p "$reports"
+marker="$(mktemp)"
+trap 'rm -f "$marker"' EXIT
+
+uvx --python 3.13 --from "${TRADINGAGENTS_SOURCE:-$here/../engine}" tradingagents "$@" < /dev/null
+
+# Print the key results here: Claude reads them from this output once the background run ends,
+# when the command's Read permission no longer applies.
+report="$(find "$reports" -mindepth 1 -maxdepth 1 -type d -newer "$marker" | sort | tail -1)"
+if [ -n "$report" ]; then
+  echo
+  echo "===== REPORT FOLDER: $report"
+  for f in 2_research/manager.md 3_trading/trader.md 5_portfolio/decision.md; do
+    [ -f "$report/$f" ] && { echo; echo "===== $f"; cat "$report/$f"; }
+  done
+fi

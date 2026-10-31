@@ -1,0 +1,8 @@
+{
+  "name": "tradingagents",
+  "version": "0.1.0",
+  "description": "Run the TradingAgents multi-agent stock analysis on your Claude plan, through claude -p. No API key needed.",
+  "author": { "name": "Roisters" },
+  "repository":"https://github.com/Roisters/trading-agents-claude",
+  "license": "Apache-2.0"
+}
